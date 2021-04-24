@@ -168,7 +168,7 @@ def make_list(data: list):
     for l in data[:5]:
         # ln = len(l['name'])
         # ln_text = len(l['text'])
-        op = f"<tr><td width=\"30%\">{l['name'][:25]}</td><td width=\"30%\">{l['text']}</td><td width=\"40%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
+        op = f"<tr><td width=\"25%\">{l['name'][:25]}</td><td width=\"25%\">{l['text']}</td><td width=\"50%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -180,7 +180,7 @@ def make_commit_list(data: list):
         # ln = len(l['name'])
         # ln_text = len(l['text'])
         # op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}   {l['percent']}%"
-        op = f"<tr><td width=\"20%\">{l['name']}</td><td width=\"30%\">{l['text']}</td><td width=\"50%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
+        op = f"<tr><td width=\"25%\">{l['name']}</td><td width=\"25%\">{l['text']}</td><td width=\"50%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -309,7 +309,7 @@ def get_waka_time_stats():
 
         stats += '📊 **' + translate['This Week I Spend My Time On'] + '** \n\n'
         # stats += '```text\n'
-        stats += "<table>"
+        stats += "<table>\n"
         if showTimeZone.lower() in truthy:
             empty = False
             tzone = data['data']['timezone']
@@ -350,7 +350,7 @@ def get_waka_time_stats():
             stats = stats + '💻 ' + translate['operating system'] + ': \n' + os_list + '\n\n'
 
         # stats += '```\n\n'
-        stats += '</table>'
+        stats += '</table>\n\n'
         if empty:
             return ""
     return stats
