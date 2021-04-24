@@ -177,9 +177,10 @@ def make_commit_list(data: list):
     '''Make List'''
     data_list = []
     for l in data[:7]:
-        ln = len(l['name'])
-        ln_text = len(l['text'])
-        op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}   {l['percent']}%"
+        # ln = len(l['name'])
+        # ln_text = len(l['text'])
+        # op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}   {l['percent']}%"
+        op = f"<tr><td width=\"20%\">{l['name']}</td><td width=\"30%\">{l['text']}</td><td width=\"50%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -273,7 +274,8 @@ def generate_commit_list(tz):
         {"name": translate['Sunday'], "text": str(Sunday) + " commits", "percent": round((Sunday / sum_week) * 100, 2)},
     ]
 
-    string = string + '**' + title + '** \n\n' + '```text\n' + make_commit_list(one_day) + '\n\n```\n'
+    # string = string + '**' + title + '** \n\n' + '```text\n' + make_commit_list(one_day) + '\n\n```\n'
+    string = string + '**' + title + '** \n\n' + '<table>\n' + make_commit_list(one_day) + '\n\n</table>\n'
 
     if show_days_of_week.lower() in truthy:
         max_element = {
@@ -284,7 +286,8 @@ def generate_commit_list(tz):
             if day['percent'] > max_element['percent']:
                 max_element = day
         days_title = translate['I am Most Productive on'] % max_element['name']
-        string = string + '📅 **' + days_title + '** \n\n' + '```text\n' + make_commit_list(dayOfWeek) + '\n\n```\n'
+        # string = string + '📅 **' + days_title + '** \n\n' + '```text\n' + make_commit_list(dayOfWeek) + '\n\n```\n'
+        string = string + '📅 **' + days_title + '** \n\n' + '<table>\n' + make_commit_list(dayOfWeek) + '\n\n</table>\n'
 
     return string
 
@@ -306,7 +309,7 @@ def get_waka_time_stats():
 
         stats += '📊 **' + translate['This Week I Spend My Time On'] + '** \n\n'
         # stats += '```text\n'
-        status += "<table>"
+        stats += "<table>"
         if showTimeZone.lower() in truthy:
             empty = False
             tzone = data['data']['timezone']
@@ -347,7 +350,7 @@ def get_waka_time_stats():
             stats = stats + '💻 ' + translate['operating system'] + ': \n' + os_list + '\n\n'
 
         # stats += '```\n\n'
-        status += '</table>'
+        stats += '</table>'
         if empty:
             return ""
     return stats
