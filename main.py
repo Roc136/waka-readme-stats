@@ -157,18 +157,20 @@ def run_query(query):
 def make_graph(percent: float):
     '''Make progress graph from API graph'''
     done_block = '█'
-    empty_block = '█'
+    empty_block = ' '
     pc_rnd = round(percent)
-    return f"<font color=\"black\">{done_block * int(pc_rnd / 5)}</font><font color=\"grey\">{empty_block * int(20 - int(pc_rnd / 5))}</font>"
+    return f"{done_block * int(pc_rnd / 4)}{empty_block * int(25 - int(pc_rnd / 4))}"
+    # return f"<font color=\"black\">{done_block * int(pc_rnd / 5)}</font><font color=\"grey\">{empty_block * int(20 - int(pc_rnd / 5))}</font>"
 
 
 def make_list(data: list):
     '''Make List'''
     data_list = []
     for l in data[:5]:
-        # ln = len(l['name'])
-        # ln_text = len(l['text'])
-        op = f"<tr><td width=\"25%\">{l['name'][:25]}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
+        ln = len(l['name'])
+        ln_text = len(l['text'])
+        op = f"{l['name'][:25]}{' ' * (25 - ln)}{l['text']}{' ' * (20 - ln_text)}{make_graph(l['percent'])}|   {l['percent']}%"
+        # op = f"<tr><td width=\"25%\">{l['name'][:25]}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -177,10 +179,10 @@ def make_commit_list(data: list):
     '''Make List'''
     data_list = []
     for l in data[:7]:
-        # ln = len(l['name'])
-        # ln_text = len(l['text'])
-        # op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}   {l['percent']}%"
-        op = f"<tr><td width=\"25%\">{l['name']}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
+        ln = len(l['name'])
+        ln_text = len(l['text'])
+        op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}|   {l['percent']}%"
+        # op = f"<tr><td width=\"25%\">{l['name']}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -274,8 +276,8 @@ def generate_commit_list(tz):
         {"name": translate['Sunday'], "text": str(Sunday) + " commits", "percent": round((Sunday / sum_week) * 100, 2)},
     ]
 
-    # string = string + '**' + title + '** \n\n' + '```text\n' + make_commit_list(one_day) + '\n\n```\n'
-    string = string + '**' + title + '** \n\n' + '<table>\n' + make_commit_list(one_day) + '\n\n</table>\n'
+    string = string + '**' + title + '** \n\n' + '```text\n' + make_commit_list(one_day) + '\n\n```\n'
+    # string = string + '**' + title + '** \n\n' + '<table>\n' + make_commit_list(one_day) + '\n\n</table>\n'
 
     if show_days_of_week.lower() in truthy:
         max_element = {
@@ -286,8 +288,8 @@ def generate_commit_list(tz):
             if day['percent'] > max_element['percent']:
                 max_element = day
         days_title = translate['I am Most Productive on'] % max_element['name']
-        # string = string + '📅 **' + days_title + '** \n\n' + '```text\n' + make_commit_list(dayOfWeek) + '\n\n```\n'
-        string = string + '📅 **' + days_title + '** \n\n' + '<table>\n' + make_commit_list(dayOfWeek) + '\n\n</table>\n'
+        string = string + '📅 **' + days_title + '** \n\n' + '```text\n' + make_commit_list(dayOfWeek) + '\n\n```\n'
+        # string = string + '📅 **' + days_title + '** \n\n' + '<table>\n' + make_commit_list(dayOfWeek) + '\n\n</table>\n'
 
     return string
 
@@ -308,8 +310,8 @@ def get_waka_time_stats():
             stats = stats + generate_commit_list(tz=data['data']['timezone']) + '\n\n'
 
         stats += '📊 **' + translate['This Week I Spend My Time On'] + '** \n\n'
-        # stats += '```text\n'
-        stats += "<table>\n"
+        stats += '```text\n'
+        # stats += "<table>\n"
         if showTimeZone.lower() in truthy:
             empty = False
             tzone = data['data']['timezone']
@@ -349,8 +351,8 @@ def get_waka_time_stats():
                 os_list = make_list(data['data']['operating_systems'])
             stats = stats + '💻 ' + translate['operating system'] + ': \n' + os_list + '\n\n'
 
-        # stats += '```\n\n'
-        stats += '</table>\n\n'
+        stats += '```\n\n'
+        # stats += '</table>\n\n'
         if empty:
             return ""
     return stats
@@ -387,8 +389,8 @@ def generate_language_per_repo(result):
         })
 
     title = translate['I Mostly Code in'] % most_language_repo
-    # return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
-    return '**' + title + '** \n\n' + '<table>\n' + make_list(data) + '\n\n</table>\n'
+    return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
+    # return '**' + title + '** \n\n' + '<table>\n' + make_list(data) + '\n\n</table>\n'
 
 
 def get_line_of_code():
