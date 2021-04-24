@@ -157,18 +157,18 @@ def run_query(query):
 def make_graph(percent: float):
     '''Make progress graph from API graph'''
     done_block = '█'
-    empty_block = '░'
+    empty_block = '█'
     pc_rnd = round(percent)
-    return f"{done_block * int(pc_rnd / 4)}{empty_block * int(25 - int(pc_rnd / 4))}"
+    return f"<a style=\"color:black\">{done_block * int(pc_rnd / 4)}</a><a style=\"color:grey\">{empty_block * int(25 - int(pc_rnd / 4))}</a>"
 
 
 def make_list(data: list):
     '''Make List'''
     data_list = []
     for l in data[:5]:
-        ln = len(l['name'])
-        ln_text = len(l['text'])
-        op = f"{l['name'][:25]}{' ' * (25 - ln)}{l['text']}{' ' * (20 - ln_text)}{make_graph(l['percent'])}   {l['percent']}%"
+        # ln = len(l['name'])
+        # ln_text = len(l['text'])
+        op = f"<tr><td width=\"30%\">{l['name'][:25]}</td><td width=\"30%\">{l['text']}</td><td width=\"40%\">{make_graph(l['percent'])}   {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -305,7 +305,8 @@ def get_waka_time_stats():
             stats = stats + generate_commit_list(tz=data['data']['timezone']) + '\n\n'
 
         stats += '📊 **' + translate['This Week I Spend My Time On'] + '** \n\n'
-        stats += '```text\n'
+        # stats += '```text\n'
+        status += "<table>"
         if showTimeZone.lower() in truthy:
             empty = False
             tzone = data['data']['timezone']
@@ -345,7 +346,8 @@ def get_waka_time_stats():
                 os_list = make_list(data['data']['operating_systems'])
             stats = stats + '💻 ' + translate['operating system'] + ': \n' + os_list + '\n\n'
 
-        stats += '```\n\n'
+        # stats += '```\n\n'
+        status += '</table>'
         if empty:
             return ""
     return stats
@@ -382,7 +384,8 @@ def generate_language_per_repo(result):
         })
 
     title = translate['I Mostly Code in'] % most_language_repo
-    return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
+    # return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
+    return '**' + title + '** \n\n' + '<table>\n' + make_list(data) + '\n\n</table>\n'
 
 
 def get_line_of_code():
