@@ -81,6 +81,11 @@ inputs:
     required: false
     description: "Git commit with your own name and email"
     default: "False"
+  
+  INGORED_REPOS:
+    required: false
+    description: "Repos you don't want to be counted"
+    default: ""
 
 runs:
   using: 'docker'
