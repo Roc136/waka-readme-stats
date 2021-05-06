@@ -237,6 +237,16 @@ CSS          2 repos        █░░░░░░░░░░░░░░░░�
 
 ![Chart not found](https://raw.githubusercontent.com/anmol098/anmol098/master/charts/bar_graph.png) 
 
+`INGORED_REPOS` You can add those repos you don’t want to be counted here, This also works at LINES_OF_CODE
+
+example:
+
+```yml
+
+INGORED_REPOS: "Roc136, waka-readme-stats"
+
+```
+
 ## :sparkling_heart: Support the project
 
 I open-source almost everything I can, and I try to reply to everyone needing help using these projects. Obviously,
