@@ -42,7 +42,7 @@ show_profile_view = os.getenv('INPUT_SHOW_PROFILE_VIEWS')
 show_short_info = os.getenv('INPUT_SHOW_SHORT_INFO')
 locale = os.getenv('INPUT_LOCALE')
 commit_by_me = os.getenv('INPUT_COMMIT_BY_ME')
-ingored_repos_name = str(os.getenv('INPUT_INGORED_REPOS')).split(',')
+ingored_repos_name = str(os.getenv('INPUT_INGORED_REPOS') or '').split(',')
 show_waka_stats = 'y'
 # The GraphQL query to get commit data.
 userInfoQuery = """
