@@ -237,13 +237,13 @@ CSS          2 repos        █░░░░░░░░░░░░░░░░�
 
 ![Chart not found](https://raw.githubusercontent.com/anmol098/anmol098/master/charts/bar_graph.png) 
 
-`INGORED_REPOS` You can add those repos you don’t want to be counted here, This also works at LINES_OF_CODE
+`IGNORED_REPOS` You can add those repos you don’t want to be counted here, This also works at LINES_OF_CODE
 
 example:
 
 ```yml
 
-INGORED_REPOS: "Roc136, waka-readme-stats"
+IGNORED_REPOS: "Roc136, waka-readme-stats"
 
 ```
 

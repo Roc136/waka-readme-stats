@@ -15,7 +15,7 @@ from make_bar_graph import BarGraph
 
 class LinesOfCode:
 
-    def __init__(self, id, username, ghtoken, repositoryData, ingored_repos = []):
+    def __init__(self, id, username, ghtoken, repositoryData, ignored_repos = []):
         self.id = id
         self.username = username
 
@@ -23,13 +23,13 @@ class LinesOfCode:
         self.headers = {"Authorization": "Bearer " + ghtoken}
         self.repositoryData = repositoryData
 
-        self.ingored_repos = ingored_repos
+        self.ignored_repos = ignored_repos
 
     def calculateLoc(self):
         result = self.repositoryData
         yearly_data = {}
         for repo in result['data']['user']['repositories']['edges']:
-            if repo['node']['name'] not in self.ingored_repos:
+            if repo['node']['name'] not in self.ignored_repos:
                 self.getCommitStat(repo['node'], yearly_data)
                 time.sleep(0.7)
         return yearly_data

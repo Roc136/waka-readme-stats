@@ -82,7 +82,7 @@ inputs:
     description: "Git commit with your own name and email"
     default: "False"
   
-  INGORED_REPOS:
+  IGNORED_REPOS:
     required: false
     description: "Repos you don't want to be counted"
     default: ""
