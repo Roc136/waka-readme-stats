@@ -27,6 +27,7 @@ class LinesOfCode:
         result = self.repositoryData
         yearly_data = {}
         for repo in result['data']['user']['repositories']['edges']:
+            print(repo)
             self.getCommitStat(repo['node'], yearly_data)
             time.sleep(0.7)
         return yearly_data
