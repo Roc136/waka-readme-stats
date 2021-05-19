@@ -15,14 +15,13 @@ from make_bar_graph import BarGraph
 
 class LinesOfCode:
 
-    def __init__(self, id, username, ghtoken, repositoryData, ignored_repos = []):
+    def __init__(self, id, username, ghtoken, repositoryData, ignored_repos):
         self.id = id
         self.username = username
 
         self.g = Github(ghtoken)
         self.headers = {"Authorization": "Bearer " + ghtoken}
         self.repositoryData = repositoryData
-
         self.ignored_repos = ignored_repos
 
     def calculateLoc(self):
