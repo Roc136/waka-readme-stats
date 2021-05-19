@@ -71,7 +71,7 @@ createContributedRepoQuery = Template("""query {
 createCommittedDateQuery = Template("""
 query {
     repository(owner: "$owner", name: "$name") {
-      ref(qualifiedName: "master") {
+      defaultBranchRef {
         target {
           ... on Commit {
             history(first: 100, author: { id: "$id" }) {
@@ -161,7 +161,6 @@ def make_graph(percent: float):
     empty_block = ' '
     pc_rnd = round(percent)
     return f"{done_block * int(pc_rnd / 4)}{empty_block * int(25 - int(pc_rnd / 4))}"
-    # return f"<font color=\"black\">{done_block * int(pc_rnd / 5)}</font><font color=\"grey\">{empty_block * int(20 - int(pc_rnd / 5))}</font>"
 
 
 def make_list(data: list):
@@ -171,7 +170,6 @@ def make_list(data: list):
         ln = len(l['name'])
         ln_text = len(l['text'])
         op = f"{l['name'][:25]}{' ' * (25 - ln)}{l['text']}{' ' * (20 - ln_text)}{make_graph(l['percent'])}|   {l['percent']}%"
-        # op = f"<tr><td width=\"25%\">{l['name'][:25]}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -183,7 +181,6 @@ def make_commit_list(data: list):
         ln = len(l['name'])
         ln_text = len(l['text'])
         op = f"{l['name']}{' ' * (13 - ln)}{l['text']}{' ' * (15 - ln_text)}{make_graph(l['percent'])}|   {l['percent']}%"
-        # op = f"<tr><td width=\"25%\">{l['name']}</td><td width=\"25%\">{l['text']}</td><td>{make_graph(l['percent'])} {l['percent']}%</td></tr>"
         data_list.append(op)
     return ' \n'.join(data_list)
 
@@ -216,7 +213,7 @@ def generate_commit_list(tz):
         result = run_query(
             createCommittedDateQuery.substitute(owner=repository["owner"]["login"], name=repository["name"], id=id))
         try:
-            committed_dates = result["data"]["repository"]["ref"]["target"]["history"]["edges"]
+            committed_dates = result["data"]["repository"]["defaultBranchRef"]["target"]["history"]["edges"]
             for committedDate in committed_dates:
                 date = datetime.datetime.strptime(committedDate["node"]["committedDate"],
                                                   "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc).astimezone(
@@ -278,7 +275,6 @@ def generate_commit_list(tz):
     ]
 
     string = string + '**' + title + '** \n\n' + '```text\n' + make_commit_list(one_day) + '\n\n```\n'
-    # string = string + '**' + title + '** \n\n' + '<table>\n' + make_commit_list(one_day) + '\n\n</table>\n'
 
     if show_days_of_week.lower() in truthy:
         max_element = {
@@ -290,7 +286,6 @@ def generate_commit_list(tz):
                 max_element = day
         days_title = translate['I am Most Productive on'] % max_element['name']
         string = string + '📅 **' + days_title + '** \n\n' + '```text\n' + make_commit_list(dayOfWeek) + '\n\n```\n'
-        # string = string + '📅 **' + days_title + '** \n\n' + '<table>\n' + make_commit_list(dayOfWeek) + '\n\n</table>\n'
 
     return string
 
@@ -312,7 +307,6 @@ def get_waka_time_stats():
 
         stats += '📊 **' + translate['This Week I Spend My Time On'] + '** \n\n'
         stats += '```text\n'
-        # stats += "<table>\n"
         if showTimeZone.lower() in truthy:
             empty = False
             tzone = data['data']['timezone']
@@ -353,7 +347,6 @@ def get_waka_time_stats():
             stats = stats + '💻 ' + translate['operating system'] + ': \n' + os_list + '\n\n'
 
         stats += '```\n\n'
-        # stats += '</table>\n\n'
         if empty:
             return ""
     return stats
@@ -391,7 +384,6 @@ def generate_language_per_repo(result):
 
     title = translate['I Mostly Code in'] % most_language_repo
     return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
-    # return '**' + title + '** \n\n' + '<table>\n' + make_list(data) + '\n\n</table>\n'
 
 
 def get_line_of_code():
