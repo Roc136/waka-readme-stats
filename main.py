@@ -17,7 +17,8 @@ import humanize
 from urllib.parse import quote
 import json
 import sys
-
+from datetime import date
+import math
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +44,9 @@ show_short_info = os.getenv('INPUT_SHOW_SHORT_INFO')
 locale = os.getenv('INPUT_LOCALE')
 commit_by_me = os.getenv('INPUT_COMMIT_BY_ME')
 ignored_repos_name = str(os.getenv('INPUT_IGNORED_REPOS') or '').replace(' ', '').split(',')
+show_updated_date = os.getenv('INPUT_SHOW_UPDATED_DATE')
+commit_message = os.getenv('INPUT_COMMIT_MESSAGE')
+show_total_code_time = os.getenv('INPUT_SHOW_TOTAL_CODE_TIME')
 show_waka_stats = 'y'
 # The GraphQL query to get commit data.
 userInfoQuery = """
@@ -145,6 +149,17 @@ repositoryListQuery = Template("""
   }
 }
 """)
+
+
+def millify(n):
+    millnames = ['', ' Thousand', ' Million', ' Billion', ' Trillion']
+    n = float(n)
+    millidx = max(0, min(len(millnames) - 1,
+                         int(math.floor(0
+                                        if n == 0
+                                        else math.log10(abs(n)) / 3))))
+
+    return '{:.0f}{}'.format(n / 10 ** (3 * millidx), millnames[millidx])
 
 
 def run_query(query):
@@ -386,12 +401,23 @@ def generate_language_per_repo(result):
     return '**' + title + '** \n\n' + '```text\n' + make_list(data) + '\n\n```\n'
 
 
+def get_yearly_data():
+    repository_list = run_query(repositoryListQuery.substitute(username=username, id=id))
+    loc = LinesOfCode(id, username, ghtoken, repository_list, ignored_repos_name)
+    yearly_data = loc.calculateLoc()
+    if showLocChart.lower() in truthy:
+        loc.plotLoc(yearly_data)
+    return yearly_data
+
+
 def get_line_of_code():
     repositoryList = run_query(repositoryListQuery.substitute(username=username, id=id))
     loc = LinesOfCode(id, username, ghtoken, repositoryList, ignored_repos_name)
     yearly_data = loc.calculateLoc()
-    total_loc = sum([yearly_data[year][quarter][lang] for year in yearly_data for quarter in yearly_data[year] for lang in yearly_data[year][quarter]])
-    return humanize.intword(int(total_loc))
+    total_loc = sum(
+        [yearly_data[year][quarter][lang] for year in yearly_data for quarter in yearly_data[year] for lang in
+         yearly_data[year][quarter]])
+    return millify(int(total_loc))
 
 
 def get_short_info(github):
@@ -421,9 +447,11 @@ def get_short_info(github):
         string += "> 🚫 " + translate["Not Opted to Hire"] + "\n > \n"
 
     string += '> 📜 '
-    string += translate['public repositories'] % public_repo + " " + '\n > \n' if public_repo != 1 else translate['public repository'] % public_repo + " " + '\n > \n'
+    string += translate['public repositories'] % public_repo + " " + '\n > \n' if public_repo != 1 else translate[
+                                                                                                            'public repository'] % public_repo + " " + '\n > \n'
     string += '> 🔑 '
-    string += translate['private repositories'] % private_repo + " " +' \n > \n' if private_repo != 1 else translate['private repository'] % private_repo + " " + '\n > \n'
+    string += translate['private repositories'] % private_repo + " " + ' \n > \n' if private_repo != 1 else translate[
+                                                                                                                'private repository'] % private_repo + " " + '\n > \n'
 
     return string
 
@@ -433,6 +461,23 @@ def get_stats(github):
 
     stats = ''
     repositoryList = run_query(repositoryListQuery.substitute(username=username, id=id))
+    
+    if show_loc.lower() in truthy or showLocChart.lower() in truthy:
+        # This condition is written to calculate the lines of code because it is heavy process soo needs to be calculate once this will reduce the execution time
+        yearly_data = get_yearly_data()
+
+    if show_total_code_time.lower() in truthy:
+        request = requests.get(
+            f"https://wakatime.com/api/v1/users/current/all_time_since_today?api_key={waka_key}")
+        if request.status_code == 401:
+            print("Error With WAKA time API returned " + str(request.status_code) + " Response " + str(request.json()))
+        elif "text" not in request.json()["data"]:
+            print("User stats are calculating. Try again later.")
+        else:
+            data = request.json()
+            stats += '![Code Time](http://img.shields.io/badge/' + quote(
+                str("Code Time")) + '-' + quote(str(
+                data['data']['text'])) + '-blue)\n\n'
 
     if show_profile_view.lower() in truthy:
         data = run_v3_api(get_profile_view.substitute(owner=username, repo=username))
@@ -454,18 +499,20 @@ def get_stats(github):
         stats = stats + generate_language_per_repo(repositoryList) + '\n\n'
 
     if showLocChart.lower() in truthy:
-        loc = LinesOfCode(id, username, ghtoken, repositoryList, ignored_repos_name)
-        yearly_data = loc.calculateLoc()
-        loc.plotLoc(yearly_data)
         stats += '**' + translate['Timeline'] + '**\n\n'
         branch_name = github.get_repo(f'{username}/{username}').default_branch
         stats = stats + '![Chart not found](https://raw.githubusercontent.com/' + username + '/' + username + '/' + branch_name + '/charts/bar_graph.png) \n\n'
+
+    if show_updated_date.lower() in truthy:
+        now = datetime.datetime.utcnow()
+        d1 = now.strftime("%d/%m/%Y %H:%M:%S")
+        stats = stats + "\n Last Updated on " + d1 + " UTC"
 
     return stats
 
 
 # def star_me():
-    # requests.put("https://api.github.com/user/starred/anmol098/waka-readme-stats", headers=headers)
+# requests.put("https://api.github.com/user/starred/anmol098/waka-readme-stats", headers=headers)
 
 
 def decode_readme(data: str):
@@ -482,14 +529,16 @@ def generate_new_readme(stats: str, readme: str):
 
 if __name__ == '__main__':
     try:
+        start_time = datetime.datetime.now().timestamp() * 1000
         if ghtoken is None:
             raise Exception('Token not available')
         g = Github(ghtoken)
         headers = {"Authorization": "Bearer " + ghtoken}
         user_data = run_query(userInfoQuery)  # Execute the query
         username = user_data["data"]["viewer"]["login"]
-        email = user_data["data"]["viewer"]["email"]
         id = user_data["data"]["viewer"]["id"]
+        emails_user = run_v3_api("/user/emails")  # Execute the api
+        email = emails_user[0]['email']
         print("Username " + username)
         repo = g.get_repo(f"{username}/{username}")
         contents = repo.get_readme()
@@ -510,14 +559,16 @@ if __name__ == '__main__':
             committer = InputGitAuthor('readme-bot', '41898282+github-actions[bot]@users.noreply.github.com')
         if new_readme != rdmd:
             try:
-                repo.update_file(path=contents.path, message='Updated with Dev Metrics',
+                repo.update_file(path=contents.path, message=commit_message,
                                  content=new_readme, sha=contents.sha, branch='master',
                                  committer=committer)
             except:
-                repo.update_file(path=contents.path, message='Updated with Dev Metrics',
+                repo.update_file(path=contents.path, message=commit_message,
                                  content=new_readme, sha=contents.sha, branch='main',
                                  committer=committer)
             print("Readme updated")
+        end_time = datetime.datetime.now().timestamp() * 1000
+        print("Program processed in {} miliseconds.".format(round(end_time - start_time, 0)))
     except Exception as e:
         traceback.print_exc()
         print("Exception Occurred " + str(e))
